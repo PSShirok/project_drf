@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'course',
+    'payments',
+    'django_filters',
     ]
 
 MIDDLEWARE = [

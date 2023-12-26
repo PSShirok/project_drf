@@ -19,9 +19,10 @@ class Course(models.Model):
 
 class Lesson(models.Model):
     name = models.CharField(max_length=30)
-    preview = models.ImageField(upload_to='course/', **NULLBALE)
+    preview = models.ImageField(upload_to='lessons/', **NULLBALE)
     description = models.TextField()
-    url = models.TextField(**NULLBALE)
+    url = models.URLField(max_length=200, **NULLBALE)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE, **NULLBALE)
 
     def __str__(self):
         return f'{self.name, self.description}'

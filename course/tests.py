@@ -11,60 +11,59 @@ from users.models import User
 class LessonTestCase(APITestCase):
 
     def setUp(self):
-        pass
+        self.factory = APIRequestFactory()
+        self.user = User.objects.create(email='admin@admin.admin', password='123qweasd')
+        self.client = APIClient()
+        token = AccessToken.for_user(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.lesson = Lesson.objects.create(name='Тестовый урок',
+                                            description='test lesson',
+                                            owner=self.user)
 
     data = {'name': 'Тестовый урок', 'description': 'test lesson'}
 
     def test_create_lesson(self):
         """Тест создания урока"""
 
-        response = self.client.post('/lesson/create/', data=self.data)
-        #print(response.json())
+        response = self.client.post(reverse('course:lesson_create'), data=self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json(), {'course_id': None,
                                            'description': 'test lesson',
-                                           'id': 1, 'name': 'Тестовый урок',
+                                           'id': 2, 'name': 'Тестовый урок',
                                            'owner': None, 'preview': None, 'url': None})
         self.assertTrue(Lesson.objects.all().exists())
 
     def test_list_lesson(self):
         """Тестирование вывода списка уроков"""
-        Lesson.objects.create(name='Тестовый урок', description='test lesson')
-        response = self.client.get('/lesson/')
+        response = self.client.get(reverse('course:lesson_list'))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), [{'course_id': None,
-                                           'description': 'test lesson',
-                                           'id': 2, 'name': 'Тестовый урок',
-                                           'owner': None, 'preview': None, 'url': None}])
-
+        self.assertEqual(response.json(), {'count': 1, 'next': None,
+                                           'previous': None, 'results':
+                                               [{'id': 3, 'name': 'Тестовый урок',
+                                                 'preview': None, 'description': 'test lesson',
+                                                 'url': None, 'course_id': None, 'owner': 2}]})
 
     def test_retrieve_lesson(self):
         """Тест на просмотр урока"""
-        Lesson.objects.create(name='детальный тест', description='test_detail')
-        response = self.client.get('/lesson/3/')
-
+        response = self.client.get(reverse('course:lesson_detail', args=[self.lesson.id]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {'id': 3, 'name': 'детальный тест',
-                                            'preview': None, 'description': 'test_detail',
-                                            'url': None, 'course_id': None, 'owner': None})
-
+        self.assertEqual(response.json(), {'id': 4, 'name': 'Тестовый урок',
+                                           'preview': None, 'description': 'test lesson',
+                                           'url': None, 'course_id': None, 'owner': 3})
 
     def test_update_lesson(self):
-        """Тест  на изменение урока"""
-        Lesson.objects.create(name='test_update', description='test_update')
-        #Lesson.objects.update(owner=1)
-        response = self.client.patch('/lesson/update/4/', data={'description': 'TEST UPDATE'})
-        #print(response.json())
+        """Тест на изменение урока"""
+        response = self.client.patch(reverse('course:lesson_update', args=[self.lesson.id]), data={'description': 'TEST UPDATE'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {'id': 4, 'name': 'test_update',
+        self.assertEqual(response.json(), {'id': 5, 'name': 'Тестовый урок',
                                            'preview': None, 'description': 'TEST UPDATE',
-                                           'url': None, 'course_id': None, 'owner': None})
+                                           'url': None, 'course_id': None, 'owner': 4})
 
     # def test_delete_lesson(self):
     #     """Тест на удаление урока"""
-    #     Lesson.objects.create(name='test_del', description='test_del')
-    #     response = self.client.delete('/lesson/delete/5/')
+    #     test_del = Lesson.objects.create(name='Тестовый урок yf elfktybt', description='test lesson del', owner=self.user)
+    #     response = self.client.delete('course:lesson_delete', args=[test_del.id])
     #
     #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     #     self.assertFalse(Lesson.objects.all().exists())

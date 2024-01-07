@@ -6,7 +6,7 @@ from users.models import UserRights
 class IsModerator(BasePermission):
 
     def has_permission(self, request, view):
-        if request.user.righst == UserRights.MODERATOR:
+        if request.user.rights == UserRights.MODERATOR:
             return True
         return False
 

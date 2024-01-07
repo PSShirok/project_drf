@@ -12,8 +12,14 @@ from course.serializers import CourseSerializer, LessonSerializer, SubscriptionS
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsAuthenticated, IsModerator | IsOwner]
     pagination_class = CoursePaginator
+
+    def get_permissions(self):
+        if self.action == 'create' or self.action == 'destroy':
+            permission_classes = [IsOwner]
+        elif self.action == 'list' or self.action == 'retrieve' or self.action == 'update':
+            permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         new_course = serializer.save()
@@ -35,31 +41,31 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwner]
 
 
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    #permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+    permission_classes = [IsAuthenticated, IsModerator | IsOwner]
     pagination_class = CoursePaginator
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    #permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+    permission_classes = [IsAuthenticated, IsModerator | IsOwner]
 
 
 class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    #permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+    permission_classes = [IsAuthenticated, IsModerator | IsOwner]
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
-    #permission_classes = [IsOwner]
+    permission_classes = [IsOwner]
 
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
